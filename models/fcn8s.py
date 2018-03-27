@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torchvision import models
 
-from ..utils import get_upsampling_weight
+from utils import get_upsampling_weight
 from .config import vgg16_path, vgg16_caffe_path
 
 
@@ -10,13 +10,13 @@ from .config import vgg16_path, vgg16_caffe_path
 class FCN8s(nn.Module):
     def __init__(self, num_classes, pretrained=True, caffe=False):
         super(FCN8s, self).__init__()
-        vgg = models.vgg16()
-        if pretrained:
-            if caffe:
+        vgg = models.vgg16(pretrained)
+        # if pretrained:
+        #     if caffe:
                 # load the pretrained vgg16 used by the paper's author
-                vgg.load_state_dict(torch.load(vgg16_caffe_path))
-            else:
-                vgg.load_state_dict(torch.load(vgg16_path))
+                # vgg.load_state_dict(torch.load(vgg16_caffe_path))
+            # else:
+            #     vgg.load_state_dict(torch.load(vgg16_path))
         features, classifier = list(vgg.features.children()), list(vgg.classifier.children())
 
         '''

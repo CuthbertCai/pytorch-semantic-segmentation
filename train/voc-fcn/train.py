@@ -4,7 +4,7 @@ import random
 
 import torchvision.transforms as standard_transforms
 import torchvision.utils as vutils
-from tensorboard import SummaryWriter
+# from tensorboardX import SummaryWriter
 from torch import optim
 from torch.autograd import Variable
 from torch.backends import cudnn
@@ -20,7 +20,7 @@ cudnn.benchmark = True
 
 ckpt_path = '../../ckpt'
 exp_name = 'voc-fcn8s'
-writer = SummaryWriter(os.path.join(ckpt_path, 'exp', exp_name))
+# writer = SummaryWriter(os.path.join(ckpt_path, 'exp', exp_name))
 
 args = {
     'epoch_num': 300,
@@ -30,7 +30,7 @@ args = {
     'lr_patience': 100,  # large patience denotes fixed lr
     'snapshot': '',  # empty string denotes learning from scratch
     'print_freq': 20,
-    'val_save_to_img_file': False,
+    'val_save_to_img_file': True,
     'val_img_sample_rate': 0.1  # randomly sample some validation results to display
 }
 
@@ -121,7 +121,7 @@ def train(train_loader, net, criterion, optimizer, epoch, train_args):
         train_loss.update(loss.data[0], N)
 
         curr_iter += 1
-        writer.add_scalar('train_loss', train_loss.avg, curr_iter)
+        # writer.add_scalar('train_loss', train_loss.avg, curr_iter)
 
         if (i + 1) % train_args['print_freq'] == 0:
             print('[epoch %d], [iter %d / %d], [train loss %.5f]' % (
@@ -168,6 +168,7 @@ def validate(val_loader, net, criterion, optimizer, epoch, train_args, restore, 
         torch.save(net.state_dict(), os.path.join(ckpt_path, exp_name, snapshot_name + '.pth'))
         torch.save(optimizer.state_dict(), os.path.join(ckpt_path, exp_name, 'opt_' + snapshot_name + '.pth'))
 
+        to_save_dir = ''
         if train_args['val_save_to_img_file']:
             to_save_dir = os.path.join(ckpt_path, exp_name, str(epoch))
             check_mkdir(to_save_dir)
@@ -187,7 +188,8 @@ def validate(val_loader, net, criterion, optimizer, epoch, train_args, restore, 
                                visualize(predictions_pil.convert('RGB'))])
         val_visual = torch.stack(val_visual, 0)
         val_visual = vutils.make_grid(val_visual, nrow=3, padding=5)
-        writer.add_image(snapshot_name, val_visual)
+        # writer.add_image(snapshot_name, val_visual)
+        vutils.save_image(val_visual, os.path.join(to_save_dir, 'visual.png'))
 
     print('--------------------------------------------------------------------')
     print('[epoch %d], [val loss %.5f], [acc %.5f], [acc_cls %.5f], [mean_iu %.5f], [fwavacc %.5f]' % (
@@ -199,12 +201,12 @@ def validate(val_loader, net, criterion, optimizer, epoch, train_args, restore, 
 
     print('--------------------------------------------------------------------')
 
-    writer.add_scalar('val_loss', val_loss.avg, epoch)
-    writer.add_scalar('acc', acc, epoch)
-    writer.add_scalar('acc_cls', acc_cls, epoch)
-    writer.add_scalar('mean_iu', mean_iu, epoch)
-    writer.add_scalar('fwavacc', fwavacc, epoch)
-    writer.add_scalar('lr', optimizer.param_groups[1]['lr'], epoch)
+    # writer.add_scalar('val_loss', val_loss.avg, epoch)
+    # writer.add_scalar('acc', acc, epoch)
+    # writer.add_scalar('acc_cls', acc_cls, epoch)
+    # writer.add_scalar('mean_iu', mean_iu, epoch)
+    # writer.add_scalar('fwavacc', fwavacc, epoch)
+    # writer.add_scalar('lr', optimizer.param_groups[1]['lr'], epoch)
 
     net.train()
     return val_loss.avg
